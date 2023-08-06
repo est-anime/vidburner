@@ -167,20 +167,23 @@
       };
 
       xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status === 200) {
-            console.log('Upload completed!');
-            downloadSection.style.display = 'block';
-            const downloadLink = xhr.responseText;
-            downloadButton.addEventListener('click', () => {
-              window.location.href = downloadLink;
-            });
-          } else {
-            console.error('Upload failed!');
-          }
-        }
-      };
-
+  if (xhr.readyState === XMLHttpRequest.DONE) {
+    if (xhr.status === 200) {
+      console.log('Upload completed!');
+      downloadSection.style.display = 'block';
+      const downloadLink = xhr.responseText;
+      const a = document.getElementById('downloadLink');
+      a.href = downloadLink; // Set the href attribute
+      a.addEventListener('click', () => {
+        setTimeout(() => {
+          window.location.href = downloadLink;
+        }, 100);
+      });
+    } else {
+      console.error('Upload failed!');
+    }
+  }
+};
       xhr.send(formData);
     });
   </script>
