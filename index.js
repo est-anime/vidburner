@@ -107,7 +107,7 @@ app.post('/upload', (req, res) => {
           from: 'vpsest@gmail.com',
           to: userEmail,
           subject: 'Video Encoding Completed',
-          text: `Your video has been successfully encoded. You can download it using the following link: http://:vidburner.vpsest.repl.co/uploads/${outputFileName}`,
+          text: `Your video has been successfully encoded. You can download it using the following link: http://:vidburner.onrender.com/uploads/${outputFileName}`,
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
