@@ -4,14 +4,31 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const readline = require('readline');
 const nodemailer = require('nodemailer');
+const path = require('path'); // Import the path module
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(fileUpload());
 
+app.use('/uploads', express.static(__dirname + '/uploads'));
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
+});
+
+// Serve static files from the "public" directory
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+app.get('/services', (req, res) => {
+  res.sendFile(__dirname + '/public/services.html');
+});
+
+app.get('/contact', (req, res) => {
+  res.sendFile(__dirname + '/public/contact.html');
 });
 
 app.post('/upload', (req, res) => {
@@ -23,7 +40,7 @@ app.post('/upload', (req, res) => {
   const subtitlesFile = req.files.subtitles;
   const selectedFont = req.body.font || 'Arial-Bold';
   const outputFileName = req.body.outputFileName || 'output.mp4';
-  const userEmail = req.body.email; // New field for user's email
+  const userEmail = req.body.email;
 
   const videoPath = __dirname + '/uploads/video.mp4';
   const subtitlesPath = __dirname + '/uploads/subtitles.srt';
@@ -54,6 +71,13 @@ app.post('/upload', (req, res) => {
       }
 
       const fullFontPath = `fonts/${selectedFontFile}`;
+
+      const subtitlesExtension = path.extname(subtitlesFile.name).toLowerCase();
+      const acceptedSubtitleFormats = ['.srt', '.ass'];
+
+      if (!acceptedSubtitleFormats.includes(subtitlesExtension)) {
+        return res.status(400).send('Selected subtitle format is not supported.');
+      }
 
       const ffmpegCommand = `ffmpeg -i ${videoPath} -vf "subtitles=${subtitlesPath}:force_style='Fontfile=${fullFontPath}'" uploads/${outputFileName}`;
 
@@ -92,22 +116,20 @@ app.post('/upload', (req, res) => {
 
         // Send an email with the download link
         const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Set to true if using port 465 (secure)
-  auth: {
-    user: 'vpsest@gmail.com',
-    pass: process.env.APP_KEY, // Remove the quotes around process.env.APP_KEY
-  },
-});
-
-
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false, // Set to true if using port 465 (secure)
+          auth: {
+            user: 'vpsest@gmail.com',
+            pass: process.env.APP_KEY, // Remove the quotes around process.env.APP_KEY
+          },
+        });
 
         const mailOptions = {
           from: 'vpsest@gmail.com',
           to: userEmail,
           subject: 'Video Encoding Completed',
-          text: `Your video has been successfully encoded. You can download it using the following link: http://:vidburner.onrender.com/uploads/${outputFileName}`,
+          text: `Your video has been successfully encoded. You can download it using the following link: http://:vidburner.vpsest.repl.co/uploads/${outputFileName}`,
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
