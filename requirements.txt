@@ -1,1 +1,6 @@
-s
+express
+express-fileupload
+child_process
+readline
+nodemailer
+path
